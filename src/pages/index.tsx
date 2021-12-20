@@ -16,6 +16,13 @@ const Home: NextPage = () => {
         <h1 className={styles.title}>
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
+        <Image
+          src="/coffee.jpg"
+          alt="coffee"
+          id="img"
+          width={360}
+          height={360}
+        />
       </main>
 
       <footer className={styles.footer}></footer>
