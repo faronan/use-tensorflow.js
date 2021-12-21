@@ -1,9 +1,23 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import { useEffect } from "react";
 import styles from "../styles/Home.module.css";
+import { loadModel } from "./lib/model";
 
 const Home: NextPage = () => {
+  const predictByModel = async () => {
+    const model = await loadModel();
+    const img = document.getElementById("img") as HTMLImageElement;
+    const predictions = await model.classify(img);
+
+    console.log("Predictions: ");
+    console.log(predictions);
+  };
+
+  useEffect(() => {
+    predictByModel();
+  }, []);
   return (
     <div className={styles.container}>
       <Head>
