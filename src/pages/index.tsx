@@ -1,23 +1,24 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
-import { loadModel } from "./lib/model";
+import { loadMobilenetModel, predictions } from "./lib/mobilenet";
 
 const Home: NextPage = () => {
-  const predictByModel = async () => {
-    const model = await loadModel();
-    const img = document.getElementById("img") as HTMLImageElement;
-    const predictions = await model.classify(img);
-
-    console.log("Predictions: ");
-    console.log(predictions);
-  };
+  const [predictions, setPredictions] = useState<predictions[]>([]);
 
   useEffect(() => {
-    predictByModel();
+    (async () => {
+      const model = await loadMobilenetModel();
+
+      const img = document.getElementById("img") as HTMLImageElement;
+      const classifyPredictions = await model.classify(img);
+
+      setPredictions(classifyPredictions);
+    })();
   }, []);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -27,16 +28,21 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
         <Image
-          src="/coffee.jpg"
-          alt="coffee"
+          src="/coffee.jpeg"
+          alt="Coffee"
           id="img"
-          width={360}
-          height={360}
+          width={216}
+          height={216}
         />
+        <ul>
+          {predictions.map((prediction, index) => (
+            <li key={index}>
+              {Math.round(prediction.probability * 100)}%:{" "}
+              {prediction.className}
+            </li>
+          ))}
+        </ul>
       </main>
 
       <footer className={styles.footer}></footer>
