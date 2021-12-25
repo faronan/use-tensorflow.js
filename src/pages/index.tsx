@@ -2,22 +2,38 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import styles from "../styles/Home.module.css";
 import { loadMobilenetModel, predictions } from "./lib/mobilenet";
 
 const Home: NextPage = () => {
   const [predictions, setPredictions] = useState<predictions[]>([]);
+  const [value, setValue] = useState<string>("");
+  const { register, handleSubmit } = useForm();
+  const { ref, ...rest } = register("imageFile");
 
-  useEffect(() => {
+  const onSubmit = () => {
     (async () => {
-      const model = await loadMobilenetModel();
-
       const img = document.getElementById("img") as HTMLImageElement;
-      const classifyPredictions = await model.classify(img);
+      if (!img) return;
 
+      const model = await loadMobilenetModel();
+      const classifyPredictions = await model.classify(img);
       setPredictions(classifyPredictions);
     })();
-  }, []);
+  };
+
+  const onChange = (data: { [x: string]: any[] }) => {
+    const reader = new FileReader();
+    const file = data["imageFile"][0];
+    console.log(file);
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const value = e.target!.result;
+      if (typeof value != "string") return;
+      setValue(value);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className={styles.container}>
@@ -28,13 +44,16 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <Image
-          src="/coffee.jpeg"
-          alt="Coffee"
-          id="img"
-          width={216}
-          height={216}
-        />
+        <form
+          onChange={handleSubmit(onChange)}
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <input {...rest} type="file" ref={ref} />
+          <button>分類</button>
+        </form>
+        {value && (
+          <Image src={value} alt="Coffee" id="img" width={324} height={324} />
+        )}
         <ul>
           {predictions.map((prediction, index) => (
             <li key={index}>
